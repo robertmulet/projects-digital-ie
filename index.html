@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Marketing Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<style>
+:root{--bg:#f0f2f5;--card:#fff;--text:#1a1a2e;--text2:#555;--border:#e0e0e0;--accent:#4361ee;--accent2:#7209b7;--green:#06d6a0;--red:#ef476f;--orange:#f77f00;--shadow:rgba(0,0,0,0.08);--grad:linear-gradient(135deg,#4361ee,#7209b7)}
+.dark{--bg:#0f0f1a;--card:#1a1a2e;--text:#e0e0e0;--text2:#aaa;--border:#2a2a3e;--shadow:rgba(0,0,0,0.3)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);transition:all .3s}
+.hdr{background:var(--grad);color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.hdr h1{font-size:1.3rem;font-weight:700}
+.hdr-c{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tbtn{background:rgba(255,255,255,.2);border:none;color:#fff;padding:7px 14px;border-radius:20px;cursor:pointer;font-size:.78rem;font-weight:600;transition:.2s}
+.tbtn:hover{background:rgba(255,255,255,.35)}
+.cnt{max-width:1440px;margin:0 auto;padding:16px}
+.flt{background:var(--card);border-radius:12px;padding:14px;margin-bottom:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;border:1px solid var(--border);box-shadow:0 2px 8px var(--shadow);align-items:end}
+.fg label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:3px}
+.fg select,.fg input{width:100%;padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.82rem}
+.reset-btn{padding:8px 16px;border-radius:8px;border:1px solid var(--red);background:transparent;color:var(--red);font-size:.78rem;font-weight:700;cursor:pointer;transition:.2s;white-space:nowrap;height:34px}
+.reset-btn:hover{background:var(--red);color:#fff}
+.data-info{background:var(--card);border-radius:12px;padding:10px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;border:1px solid var(--border);box-shadow:0 2px 8px var(--shadow);font-size:.78rem}
+.data-badge{padding:3px 10px;border-radius:12px;font-size:.7rem;font-weight:600;color:#fff}
+.badge-gs{background:#34a853}
+.kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-bottom:14px}
+.kc{background:var(--card);border-radius:12px;padding:14px;border:1px solid var(--border);box-shadow:0 2px 8px var(--shadow);text-align:center;transition:transform .2s}
+.kc:hover{transform:translateY(-2px)}
+.ki{font-size:1.5rem;margin-bottom:2px}.kv{font-size:1.4rem;font-weight:800;color:var(--accent);line-height:1.2}
+.kl{font-size:.65rem;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-top:3px}
+.cg{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:14px;margin-bottom:14px}
+.cc{background:var(--card);border-radius:12px;padding:18px;border:1px solid var(--border);box-shadow:0 2px 8px var(--shadow)}
+.cc h3{font-size:.88rem;font-weight:700;margin-bottom:10px}
+.tc{background:var(--card);border-radius:12px;padding:18px;border:1px solid var(--border);box-shadow:0 2px 8px var(--shadow);margin-bottom:14px;overflow-x:auto}
+.tc h3{font-size:.88rem;font-weight:700;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:.78rem}
+th{background:var(--accent);color:#fff;padding:9px 7px;text-align:right;font-weight:600;white-space:nowrap}
+th:first-child{text-align:left;border-radius:8px 0 0 0}th:last-child{border-radius:0 8px 0 0}
+td{padding:7px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap}
+td:first-child{text-align:left;font-weight:600}tr:hover td{background:rgba(67,97,238,.05)}
+.ins{background:var(--card);border-radius:12px;padding:18px;border:1px solid var(--border);box-shadow:0 2px 8px var(--shadow);margin-bottom:14px}
+.ins h3{font-size:.95rem;font-weight:700;margin-bottom:12px}
+.ig{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:10px}
+.ii{padding:12px;border-radius:10px;border-left:4px solid var(--accent);background:var(--bg)}
+.ii.gr{border-left-color:var(--green)}.ii.rd{border-left-color:var(--red)}.ii.or{border-left-color:var(--orange)}.ii.pu{border-left-color:var(--accent2)}
+.it{font-size:.72rem;font-weight:700;text-transform:uppercase;color:var(--text2)}
+.iv{font-size:1.05rem;font-weight:800;margin:3px 0}.id{font-size:.75rem;color:var(--text2)}
+.ft{text-align:center;padding:18px;font-size:.72rem;color:var(--text2)}
+.toast{position:fixed;top:20px;right:20px;padding:12px 20px;border-radius:10px;font-weight:600;font-size:.85rem;z-index:999;opacity:0;transition:opacity .3s;box-shadow:0 4px 12px rgba(0,0,0,.2);color:#fff}
+.toast.show{opacity:1}
+.loading{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);display:none;justify-content:center;align-items:center;z-index:998}
+.loading.show{display:flex}
+.spinner{width:50px;height:50px;border:4px solid rgba(255,255,255,.3);border-top:4px solid #fff;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:768px){.hdr h1{font-size:1rem}.cg{grid-template-columns:1fr}.kg{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}.kv{font-size:1.1rem}.flt{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.flt{grid-template-columns:1fr}.kg{grid-template-columns:repeat(2,1fr)}.ig{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="loading" id="loading"><div class="spinner"></div></div>
+<div class="hdr">
+  <h1 id="hT">📊 Cuadro de Mandos · Marketing Digital</h1>
+  <div class="hdr-c">
+    <button class="tbtn" onclick="toggleLang()" id="lB">🌐 EN</button>
+    <button class="tbtn" onclick="toggleTheme()" id="tB">🌙</button>
+  </div>
+</div>
+<div class="cnt">
+  <div class="data-info">
+    <span id="dataDesc">⏳ Cargando datos desde Google Sheets...</span>
+    <span class="data-badge badge-gs" id="dataBadge">GOOGLE SHEETS</span>
+  </div>
+  <div class="flt">
+    <div class="fg"><label id="lr">Región</label><select id="fr" onchange="onRC()"><option value="all" id="oar">Todas</option></select></div>
+    <div class="fg"><label id="lc">País</label><select id="fc" onchange="go()"><option value="all" id="oac">Todos</option></select></div>
+    <div class="fg"><label id="ls">Fuente de tráfico</label><select id="fs" onchange="go()"><option value="all" id="oas">Todas</option></select></div>
+    <div class="fg"><label id="lp">Mes</label><select id="fp" onchange="go()"><option value="all" id="oap">Todos</option></select></div>
+    <div class="fg"><label id="lf">Desde</label><input type="date" id="fd" onchange="go()"></div>
+    <div class="fg"><label id="lt2">Hasta</label><input type="date" id="ft2" onchange="go()"></div>
+    <div class="fg"><label>&nbsp;</label><button class="reset-btn" onclick="resetF()" id="rstBtn">🔄 Resetear filtros</button></div>
+  </div>
+  <div class="kg" id="kG"></div>
+  <div class="cg">
+    <div class="cc"><h3 id="c1t"></h3><canvas id="c1"></canvas></div>
+    <div class="cc"><h3 id="c2t"></h3><canvas id="c2"></canvas></div>
+    <div class="cc"><h3 id="c3t"></h3><canvas id="c3"></canvas></div>
+    <div class="cc"><h3 id="c4t"></h3><canvas id="c4"></canvas></div>
+  </div>
+  <div class="tc"><h3 id="t1t"></h3><div style="overflow-x:auto"><table id="t1"></table></div></div>
+  <div class="tc"><h3 id="t2t"></h3><div style="overflow-x:auto"><table id="t2"></table></div></div>
+  <div class="ins"><h3 id="iT"></h3><div class="ig" id="iG"></div></div>
+</div>
+<div class="ft" id="fT"></div>
+<script>
+const GS_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQKpXyUtO50KPtz0agS6cI6mTb1q6BJtuZ3OJ7FtACy88iwYQYYhOy3XiuGYqVwOcqXN1nasYN8x6E5/pub?gid=862792481&single=true&output=csv";
+let R=[],rcm={},lang='es',dk=false,ch={},iD=['',''];
+const CL=['#4361ee','#7209b7','#f72585','#4cc9f0','#06d6a0','#f77f00','#ef476f','#ffd166','#118ab2','#3a0ca3'];
+const T={
+es:{title:'📊 Cuadro de Mandos · Marketing Digital',reg:'Región',cty:'País',src:'Fuente de tráfico',per:'Mes',frm:'Desde',to:'Hasta',
+ar:'Todas',ac:'Todos',as:'Todas',ap:'Todos',
+rev:'Ingresos',inv:'Inversión',ses:'Sesiones',trn:'Transacciones',aov:'Ticket Medio',cr:'Tasa Conversión',roas:'ROAS',ips:'Ingreso/Sesión',cpa:'CPA',pi:'% Inv/Ing',roi:'ROI Simple',
+c1:'Ingresos por fuente de tráfico',c2:'Evolución mensual de ingresos',c3:'ROAS por fuente de tráfico',c4:'Tasa de conversión por fuente (%)',
+t1:'📋 Detalle por fuente de tráfico',t2:'🌍 Detalle por país',it:'💡 Insights Clave',
+i1:'🏆 Canal más eficiente',i2:'⚠️ Canal menos eficiente',i3:'🎯 Mejor conversión',i4:'💎 Mayor ticket medio',
+i5:'📅 Mejor mes (ingresos)',i6:'🌍 País líder',i7:'📈 ROI Global',i8:'💰 CPA Global',
+d1:'Mayor retorno por euro invertido',d2:'Menor retorno por euro invertido',d3:'Lidera en tasa de conversión',d4:'Mayor valor medio de pedido',
+d5:'Mes con más ingresos',d6:'Mercado con más ingresos',d7:'Retorno sobre la inversión total',d8:'Coste medio por transacción',
+hs:'Fuente',hr:'Ingresos',hi:'Inversión',hse:'Sesiones',ht:'Trans.',hc:'CR%',hro:'ROAS',ha:'AOV',hcp:'CPA',hri:'ROI%',hp:'País',
+ft:'Dashboard conectado a Google Sheets · Datos en vivo',rst:'🔄 Resetear filtros',
+gsLive:'GOOGLE SHEETS EN VIVO 🟢',gsOk:'✅ Datos cargados desde Google Sheets',
+ld:'⏳ Cargando datos desde Google Sheets...',le:'⚠️ No se pudo conectar a Google Sheets',rstOk:'🔄 Filtros reseteados'},
+en:{title:'📊 Dashboard · Digital Marketing',reg:'Region',cty:'Country',src:'Traffic Source',per:'Month',frm:'From',to:'To',
+ar:'All',ac:'All',as:'All',ap:'All',
+rev:'Revenue',inv:'Investment',ses:'Sessions',trn:'Transactions',aov:'Avg Order Value',cr:'Conv. Rate',roas:'ROAS',ips:'Rev/Session',cpa:'CPA',pi:'% Inv/Rev',roi:'Simple ROI',
+c1:'Revenue by Traffic Source',c2:'Monthly Revenue Trend',c3:'ROAS by Traffic Source',c4:'Conversion Rate by Source (%)',
+t1:'📋 Detail by Traffic Source',t2:'🌍 Detail by Country',it:'💡 Key Insights',
+i1:'🏆 Most Efficient Channel',i2:'⚠️ Least Efficient Channel',i3:'🎯 Best Conversion',i4:'💎 Highest Ticket',
+i5:'📅 Best Month (Revenue)',i6:'🌍 Leading Country',i7:'📈 Global ROI',i8:'💰 Global CPA',
+d1:'Highest return per dollar invested',d2:'Lowest return per dollar invested',d3:'Leads in conversion rate',d4:'Highest average order value',
+d5:'Month with highest revenue',d6:'Top revenue market',d7:'Total return on investment',d8:'Average cost per transaction',
+hs:'Source',hr:'Revenue',hi:'Investment',hse:'Sessions',ht:'Trans.',hc:'CR%',hro:'ROAS',ha:'AOV',hcp:'CPA',hri:'ROI%',hp:'Country',
+ft:'Dashboard connected to Google Sheets · Live data',rst:'🔄 Reset filters',
+gsLive:'GOOGLE SHEETS LIVE 🟢',gsOk:'✅ Data loaded from Google Sheets',
+ld:'⏳ Loading from Google Sheets...',le:'⚠️ Could not connect to Google Sheets',rstOk:'🔄 Filters reset'}
+};
+function t(k){return T[lang][k]||k}
+function fm(n){return n>=1e6?'$'+(n/1e6).toFixed(2)+'M':n>=1e3?'$'+(n/1e3).toFixed(1)+'K':'$'+n.toFixed(2)}
+function fn(n){return n.toLocaleString()}
+function toast(m,e){const el=document.getElementById('toast');el.textContent=m;el.style.background=e?'var(--red)':'var(--green)';el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3500)}
+
+function proc(rows,src){
+  const map={};rows.forEach(r=>{const d=String(r.fecha||'').substring(0,10),f=r.fuente_trafico||'?',p=r.pais||'?',rg=r.region||'?';
+    const k=d+'|'+f+'|'+p+'|'+rg;if(!map[k])map[k]={d,f,p,r:rg,i:0,s:0,t:0,v:0};
+    map[k].i+=Number(r.inversion)||0;map[k].s+=Number(r.sesiones)||0;map[k].t+=Number(r.transacciones)||0;map[k].v+=Number(r.ingresos_totales)||0});
+  R=Object.values(map).map(x=>({d:x.d,f:x.f,p:x.p,r:x.r,i:Math.round(x.i*100)/100,s:Math.round(x.s),t:Math.round(x.t),v:Math.round(x.v*100)/100}));
+  rcm={};R.forEach(r=>{if(!rcm[r.r])rcm[r.r]=new Set();rcm[r.r].add(r.p)});Object.keys(rcm).forEach(k=>{rcm[k]=[...rcm[k]].sort()});
+  const dt=R.map(r=>r.d).sort();if(dt.length){iD=[dt[0],dt[dt.length-1]];document.getElementById('fd').value=dt[0];document.getElementById('ft2').value=dt[dt.length-1]}
+  document.getElementById('dataDesc').innerHTML='📊 <strong>'+src+'</strong>: <strong>'+fn(rows.length)+'</strong> '+(lang==='es'?'registros':'records')+' | '+dt[0]+' → '+dt[dt.length-1];
+  rebF();go();
+}
+function onRC(){uCO();go()}
+function uCO(){const reg=document.getElementById('fr').value,s=document.getElementById('fc'),p=s.value;while(s.options.length>1)s.remove(1);
+  let c;if(reg==='all'){const st=new Set();R.forEach(r=>st.add(r.p));c=[...st].sort()}else{c=rcm[reg]?[...rcm[reg]].sort():[];}
+  c.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;s.appendChild(o)});s.value=c.includes(p)?p:'all'}
+function resetF(){document.getElementById('fr').value='all';uCO();document.getElementById('fc').value='all';document.getElementById('fs').value='all';document.getElementById('fp').value='all';
+  document.getElementById('fd').value=iD[0];document.getElementById('ft2').value=iD[1];go();toast(t('rstOk'),false)}
+function rebF(){const r=document.getElementById('fr');while(r.options.length>1)r.remove(1);const rg=new Set();R.forEach(x=>rg.add(x.r));[...rg].sort().forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;r.appendChild(o)});r.value='all';uCO();
+  const s=document.getElementById('fs');while(s.options.length>1)s.remove(1);const sr=new Set();R.forEach(x=>sr.add(x.f));[...sr].sort().forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;s.appendChild(o)});
+  const m=document.getElementById('fp');while(m.options.length>1)m.remove(1);const mo=new Set();R.forEach(x=>{if(x.d.length>=7)mo.add(x.d.substring(0,7))});[...mo].sort().forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;m.appendChild(o)})}
+function filt(){const rg=document.getElementById('fr').value,ct=document.getElementById('fc').value,sr=document.getElementById('fs').value,
+  pr=document.getElementById('fp').value,df=document.getElementById('fd').value,dt=document.getElementById('ft2').value;
+  return R.filter(r=>{if(rg!=='all'&&r.r!==rg)return false;if(ct!=='all'&&r.p!==ct)return false;if(sr!=='all'&&r.f!==sr)return false;
+    if(pr!=='all'&&!r.d.startsWith(pr))return false;if(df&&r.d<df)return false;if(dt&&r.d>dt)return false;return true})}
+function calc(rows){let i=0,s=0,tr=0,v=0;rows.forEach(r=>{i+=r.i;s+=r.s;tr+=r.t;v+=r.v});
+  return{inv:Math.round(i*100)/100,ses:s,trn:tr,rev:Math.round(v*100)/100,aov:tr>0?Math.round(v/tr*100)/100:0,cr:s>0?Math.round(tr/s*10000)/100:0,
+    roas:i>0?Math.round(v/i*100)/100:0,ips:s>0?Math.round(v/s*100)/100:0,cpa:tr>0?Math.round(i/tr*100)/100:0,pi:v>0?Math.round(i/v*10000)/100:0,roi:i>0?Math.round((v-i)/i*10000)/100:0}}
+function grp(rows,fn){const m={};rows.forEach(r=>{const k=fn(r);if(!m[k])m[k]=[];m[k].push(r)});return m}
+function rKPI(k){const items=[{i:'💰',v:fm(k.rev),l:t('rev')},{i:'📊',v:fm(k.inv),l:t('inv')},{i:'👥',v:fn(k.ses),l:t('ses')},{i:'🛒',v:fn(k.trn),l:t('trn')},
+  {i:'🎯',v:k.cr+'%',l:t('cr')},{i:'🚀',v:k.roas+'x',l:t('roas')},{i:'🎫',v:'$'+k.aov,l:t('aov')},{i:'💵',v:'$'+k.ips,l:t('ips')},
+  {i:'📉',v:'$'+k.cpa,l:t('cpa')},{i:'📐',v:k.pi+'%',l:t('pi')},{i:'📈',v:k.roi+'%',l:t('roi')}];
+  document.getElementById('kG').innerHTML=items.map(x=>'<div class="kc"><div class="ki">'+x.i+'</div><div class="kv">'+x.v+'</div><div class="kl">'+x.l+'</div></div>').join('')}
+function rCH(rows){const bs=grp(rows,r=>r.f),dk2=document.body.classList.contains('dark'),gc=dk2?'rgba(255,255,255,.1)':'rgba(0,0,0,.08)',tc=dk2?'#aaa':'#666';
+  const sl=Object.keys(bs).sort((a,b)=>bs[b].reduce((s,r)=>s+r.v,0)-bs[a].reduce((s,r)=>s+r.v,0)),sr=sl.map(s=>Math.round(bs[s].reduce((a,r)=>a+r.v,0)));
+  if(ch.a)ch.a.destroy();ch.a=new Chart(document.getElementById('c1'),{type:'bar',data:{labels:sl,datasets:[{data:sr,backgroundColor:CL,borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{color:tc,callback:v=>fm(v)},grid:{color:gc}},x:{ticks:{color:tc,font:{size:10}}}}}});
+  const bm=grp(rows,r=>r.d.substring(0,7)),ml=Object.keys(bm).sort(),mr=ml.map(m=>Math.round(bm[m].reduce((a,r)=>a+r.v,0)));
+  if(ch.b)ch.b.destroy();ch.b=new Chart(document.getElementById('c2'),{type:'line',data:{labels:ml,datasets:[{data:mr,borderColor:'#4361ee',backgroundColor:'rgba(67,97,238,.1)',fill:true,tension:.4,pointRadius:3,borderWidth:2}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{color:tc,callback:v=>fm(v)},grid:{color:gc}},x:{ticks:{color:tc,font:{size:10}}}}}});
+  const sro=sl.map(s=>{const d=bs[s],inv=d.reduce((a,r)=>a+r.i,0);return inv>0?Math.round(d.reduce((a,r)=>a+r.v,0)/inv*100)/100:0});
+  if(ch.c)ch.c.destroy();ch.c=new Chart(document.getElementById('c3'),{type:'bar',data:{labels:sl,datasets:[{data:sro,backgroundColor:CL.slice().reverse(),borderRadius:6}]},options:{responsive:true,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:tc,callback:v=>v+'x'},grid:{color:gc}},y:{ticks:{color:tc,font:{size:10}}}}}});
+  const scr=sl.map(s=>{const d=bs[s],se=d.reduce((a,r)=>a+r.s,0);return se>0?Math.round(d.reduce((a,r)=>a+r.t,0)/se*10000)/100:0});
+  if(ch.d)ch.d.destroy();ch.d=new Chart(document.getElementById('c4'),{type:'bar',data:{labels:sl,datasets:[{data:scr,backgroundColor:'#06d6a0',borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{color:tc,callback:v=>v+'%'},grid:{color:gc}},x:{ticks:{color:tc,font:{size:10}}}}}})}
+function rTB(rows){const bs=grp(rows,r=>r.f),sd=Object.entries(bs).map(([n,rw])=>{const k=calc(rw);k.n=n;return k}).sort((a,b)=>b.rev-a.rev);
+  let h='<thead><tr><th>'+t('hs')+'</th><th>'+t('hr')+'</th><th>'+t('hi')+'</th><th>'+t('hse')+'</th><th>'+t('ht')+'</th><th>'+t('hc')+'</th><th>'+t('hro')+'</th><th>'+t('ha')+'</th><th>'+t('hcp')+'</th><th>'+t('hri')+'</th></tr></thead><tbody>';
+  sd.forEach(s=>{h+='<tr><td>'+s.n+'</td><td>'+fm(s.rev)+'</td><td>'+fm(s.inv)+'</td><td>'+fn(s.ses)+'</td><td>'+fn(s.trn)+'</td><td>'+s.cr+'%</td><td>'+s.roas+'x</td><td>$'+s.aov+'</td><td>$'+s.cpa+'</td><td>'+s.roi+'%</td></tr>'});document.getElementById('t1').innerHTML=h+'</tbody>';
+  const bc=grp(rows,r=>r.p),cd=Object.entries(bc).map(([n,rw])=>{const k=calc(rw);k.n=n;return k}).sort((a,b)=>b.rev-a.rev).slice(0,15);
+  let h2='<thead><tr><th>'+t('hp')+'</th><th>'+t('hr')+'</th><th>'+t('hi')+'</th><th>'+t('hse')+'</th><th>'+t('ht')+'</th><th>'+t('hc')+'</th><th>'+t('hro')+'</th><th>'+t('ha')+'</th><th>'+t('hcp')+'</th><th>'+t('hri')+'</th></tr></thead><tbody>';
+  cd.forEach(s=>{h2+='<tr><td>'+s.n+'</td><td>'+fm(s.rev)+'</td><td>'+fm(s.inv)+'</td><td>'+fn(s.ses)+'</td><td>'+fn(s.trn)+'</td><td>'+s.cr+'%</td><td>'+s.roas+'x</td><td>$'+s.aov+'</td><td>$'+s.cpa+'</td><td>'+s.roi+'%</td></tr>'});document.getElementById('t2').innerHTML=h2+'</tbody>'}
+function rIN(k,rows){const bs=grp(rows,r=>r.f),ss=Object.entries(bs).map(([n,rw])=>{const k2=calc(rw);k2.n=n;return k2});if(!ss.length){document.getElementById('iG').innerHTML='';return}
+  const br=ss.reduce((a,b)=>a.roas>b.roas?a:b),wr=ss.reduce((a,b)=>a.roas<b.roas?a:b),bcr=ss.reduce((a,b)=>a.cr>b.cr?a:b),ba=ss.reduce((a,b)=>a.aov>b.aov?a:b);
+  const ms=Object.entries(grp(rows,r=>r.d.substring(0,7))).map(([n,rw])=>{const k2=calc(rw);k2.n=n;return k2}),bmr=ms.reduce((a,b)=>a.rev>b.rev?a:b);
+  const bp=Object.entries(grp(rows,r=>r.p)).map(([n,rw])=>{const k2=calc(rw);k2.n=n;return k2}).reduce((a,b)=>a.rev>b.rev?a:b);
+  document.getElementById('iG').innerHTML=
+    '<div class="ii gr"><div class="it">'+t('i1')+'</div><div class="iv">'+br.n+' — '+br.roas+'x</div><div class="id">'+t('d1')+'</div></div>'+
+    '<div class="ii rd"><div class="it">'+t('i2')+'</div><div class="iv">'+wr.n+' — '+wr.roas+'x</div><div class="id">'+t('d2')+'</div></div>'+
+    '<div class="ii gr"><div class="it">'+t('i3')+'</div><div class="iv">'+bcr.n+' — '+bcr.cr+'%</div><div class="id">'+t('d3')+'</div></div>'+
+    '<div class="ii pu"><div class="it">'+t('i4')+'</div><div class="iv">'+ba.n+' — $'+ba.aov+'</div><div class="id">'+t('d4')+'</div></div>'+
+    '<div class="ii or"><div class="it">'+t('i5')+'</div><div class="iv">'+bmr.n+' — '+fm(bmr.rev)+'</div><div class="id">'+t('d5')+'</div></div>'+
+    '<div class="ii gr"><div class="it">'+t('i6')+'</div><div class="iv">'+bp.n+' — '+fm(bp.rev)+'</div><div class="id">'+t('d6')+'</div></div>'+
+    '<div class="ii gr"><div class="it">'+t('i7')+'</div><div class="iv">'+k.roi+'%</div><div class="id">'+t('d7')+'</div></div>'+
+    '<div class="ii"><div class="it">'+t('i8')+'</div><div class="iv">$'+k.cpa+'</div><div class="id">'+t('d8')+'</div></div>'}
+function ul(){document.getElementById('hT').textContent=t('title');document.getElementById('lr').textContent=t('reg');document.getElementById('lc').textContent=t('cty');document.getElementById('ls').textContent=t('src');document.getElementById('lp').textContent=t('per');document.getElementById('lf').textContent=t('frm');document.getElementById('lt2').textContent=t('to');document.getElementById('oar').textContent=t('ar');document.getElementById('oac').textContent=t('ac');document.getElementById('oas').textContent=t('as');document.getElementById('oap').textContent=t('ap');document.getElementById('c1t').textContent=t('c1');document.getElementById('c2t').textContent=t('c2');document.getElementById('c3t').textContent=t('c3');document.getElementById('c4t').textContent=t('c4');document.getElementById('t1t').textContent=t('t1');document.getElementById('t2t').textContent=t('t2');document.getElementById('iT').textContent=t('it');document.getElementById('fT').textContent=t('ft');document.getElementById('rstBtn').textContent=t('rst')}
+function go(){if(!R.length)return;const rows=filt(),k=calc(rows);rKPI(k);rCH(rows);rTB(rows);rIN(k,rows)}
+function toggleTheme(){dk=!dk;document.body.classList.toggle('dark',dk);document.getElementById('tB').textContent=dk?'☀️':'🌙';go()}
+function toggleLang(){lang=lang==='es'?'en':'es';document.getElementById('lB').textContent=lang==='es'?'🌐 EN':'🌐 ES';document.documentElement.lang=lang;ul();go()}
+function loadGS(){document.getElementById('loading').classList.add('show');document.getElementById('dataDesc').innerHTML=t('ld');
+  Papa.parse(GS_URL,{download:true,header:true,skipEmptyLines:true,dynamicTyping:true,
+    complete:function(res){document.getElementById('loading').classList.remove('show');const rows=res.data;
+      if(!rows||!rows.length||['fecha','fuente_trafico','pais','region','inversion','sesiones','transacciones','ingresos_totales'].some(c=>!Object.keys(rows[0]).includes(c))){
+        document.getElementById('dataDesc').innerHTML=t('le');document.getElementById('dataBadge').textContent='⚠️';document.getElementById('dataBadge').style.background='var(--orange)';toast(t('le'),true);return}
+      proc(rows,'Google Sheets');document.getElementById('dataBadge').textContent=t('gsLive');document.getElementById('dataBadge').className='data-badge badge-gs';toast(t('gsOk'),false)},
+    error:function(){document.getElementById('loading').classList.remove('show');document.getElementById('dataDesc').innerHTML=t('le');document.getElementById('dataBadge').textContent='⚠️';toast(t('le'),true)}})}
+ul();loadGS();
+</script></body></html>
